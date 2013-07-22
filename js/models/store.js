@@ -1,9 +1,9 @@
 (function (emberApp) {
     emberApp.Store = Ember.Object.extend({
-        /*baseAddress:"http://initialzr.apphb.com/api/"
-        baseAddress: "http://localhost:1031/api/"
+        /*baseAddress:"http://polychat.apphb.com/api/",
+        baseAddress: "http://localhost:1031/api/",
         */
-        baseAddress: "http://polychat.apphb.com/api/",
+        baseAddress:"http://polychat.apphb.com/api/",
         store: '',
 
         checkNetwork: function (req) {

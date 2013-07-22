@@ -170,9 +170,6 @@
 
     });
 
-    emberApp.AboutRoute = Ember.Route.extend({
-    });
-
     emberApp.AuthRoute = Ember.Route.extend({
         enter: function () {
             var auth = emberApp.get('auth');

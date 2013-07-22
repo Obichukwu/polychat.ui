@@ -24,18 +24,8 @@
     emberApp.AdminProfilesController = Ember.ArrayController.extend({
         content: [],
         sortProperties: ['firstName', 'lastName'],
-        sortAscending: true
-    });
-
-    emberApp.AdminChatroomsController = Ember.ArrayController.extend({
-        content: [],
-        sortProperties: ['title'],
         sortAscending: true,
-        datastore: emberApp.Store.create({'store':'chatroom'}),
 
-        dataLoaded: false,
-        editParentId: null,
-        editTitle: null,
-        editDescription: null,
+        dataLoaded: false
     });
 })(window.Initialzr)
