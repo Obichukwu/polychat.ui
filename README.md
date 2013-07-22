@@ -1,6 +1,6 @@
-iSocial.Client
+polychat.ui
 ==============
-iSocial App is an educational based social networking application platform developed for Delta State Polytechnic, Ozoro for my HND Project.
+polychat is an educational based social networking application platform developed for Delta State Polytechnic, Ozoro for my HND Project.
 
 
 ## Usage
