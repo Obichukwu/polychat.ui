@@ -1,10 +1,11 @@
 #header{
     height: 3em;
+    background: #3b3736;
     background-image: -webkit-linear-gradient(top, #4b4746, #3b3736);
-    background-image: -moz-linear-gradient(top, #4b4746, #3b3736);
-    background-image: -ms-linear-gradient(top, #4b4746, #3b3736);
-    background-image: -o-linear-gradient(top, #4b4746, #3b3736);
-    background-image: linear-gradient(top, #4b4746, #3b3736);
+    background-image:    -moz-linear-gradient(top, #4b4746, #3b3736);
+    background-image:     -ms-linear-gradient(top, #4b4746, #3b3736);
+    background-image:      -o-linear-gradient(top, #4b4746, #3b3736);
+    background-image:         linear-gradient(top, #4b4746, #3b3736);
 }
 .wrapper{
     width: 100%;
@@ -57,24 +58,25 @@ nav{
 #nav-list a{
     vertical-align: middle;
     text-decoration: none;
-    color: #fff;
+    color: #F91DC8;
     padding: 1em 0 1em 5%;
     display: block;
     border-bottom: 1px solid #777;
     height: 4em;
+    background: #3b3736;
     background-image: -webkit-linear-gradient(top, #4b4746, #3b3736);
-    background-image: -moz-linear-gradient(top, #4b4746, #3b3736);
-    background-image: -ms-linear-gradient(top, #4b4746, #3b3736);
-    background-image: -o-linear-gradient(top, #4b4746, #3b3736);
-    background-image: linear-gradient(top, #4b4746, #3b3736);
+    background-image:    -moz-linear-gradient(top, #4b4746, #3b3736);
+    background-image:     -ms-linear-gradient(top, #4b4746, #3b3736);
+    background-image:      -o-linear-gradient(top, #4b4746, #3b3736);
+    background-image:         linear-gradient(top, #4b4746, #3b3736);
 } 
 #nav-list a:hover {
     background: #4b4746;
     background-image: -webkit-linear-gradient(top, #5b5756, #4b4746);
-    background-image: -moz-linear-gradient(top, #5b5756, #4b4746);
-    background-image: -ms-linear-gradient(top, #5b5756, #4b4746);
-    background-image: -o-linear-gradient(top, #5b5756, #4b4746);
-    background-image: linear-gradient(top, #5b5756, #4b4746);
+    background-image:    -moz-linear-gradient(top, #5b5756, #4b4746);
+    background-image:     -ms-linear-gradient(top, #5b5756, #4b4746);
+    background-image:      -o-linear-gradient(top, #5b5756, #4b4746);
+    background-image:         linear-gradient(top, #5b5756, #4b4746);
 }
 
 @media screen and (min-width: 48em) {
@@ -103,7 +105,7 @@ nav{
 /*My CustomCode*/
 a.toggle-menu{
     font-size: 32px;
-    color:#f7e8e8; 
+    color:#F91DC8; 
     vertical-align: middle; 
 }
 
