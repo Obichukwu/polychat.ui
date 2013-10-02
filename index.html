@@ -15,9 +15,9 @@
     </head>
 	<body id="emberApp">
         
-        <script type="text/javascript" src="js/vendor/jquery.min.js"></script>
-        <script type="text/javascript" src="js/vendor/handlebars.1.0.rc4.js"></script>
-        <script type="text/javascript" src="js/vendor/ember.js"></script>
+        <script type="text/javascript" src="js/vendor/jquery-2.0.3.min.js"></script>
+        <script type="text/javascript" src="js/vendor/handlebars-1.0.0.js"></script>
+        <script type="text/javascript" src="js/vendor/ember.prod.js"></script>
         <!--<script type="text/javascript" src="js/vendor/ember.fastclick.js"></script>-->
         <script type="text/javascript" src="js/vendor/moment.min.js"></script>
 
@@ -60,7 +60,7 @@
 	                <div id="footer">
                         <div id="content" class="row">
                             <div class="large-12 columns">
-		                        <p class="credit">&copy Crystal Solutions 2013 &mdash; <a href="http://designs.nervlite.com">Nervlite Designs</a></p>
+		                        <p class="credit">&copy Onajite C. Ika 2013</p>
                             </div>
 				        </div>
 	                </div>
@@ -69,42 +69,89 @@
 	    </div>
         </script>
 
-        <script type="text/x-handlebars" id="feeds">
+        <script type="text/x-handlebars" id="feeds/index">
             <h2>Feeds</h2>
             <div class="row">
                 <div class="large-12 columns">
-                    {{view Ember.TextArea placeholder="Shout out to the world!" valueBinding="newPost"}}
+                    {{view Ember.TextArea placeholder="Shoutout...." valueBinding="newPost"}}
                     {{#if newPostError}} <small class="error">Error, Correct and retry.</small> {{/if}}
-                </div>
-                <div class="large-12 columns text-right">
-                    <button {{action "postNew"}} class="button small radius">Post</button> 
+                    <button {{action "postNew"}} class="button small radius" style="float:right;">Post</button> 
                 </div>
             </div>
 
             {{#if controller.dataLoaded}}
             <div class="row">
-                <div class="large-12 columns">
-                    <ul class="no-bullet">
-                    {{#each post in controller}}
-                        <li>
-                            <img/>
-                            <div class="postTitle">{{post.title}}
-                                <span>{{moment_date post.postDate}}</span>
-                            </div>
-                            <div class="postContent">
-                                {{#if post.isTextContent}}
-                                    {{post.content}}
-                                {{else}}
-                                    <img src="data:image/png;base64,{{post.content}}" />
-                                {{/if}}
-                            </div>
-                        </li>
-                    {{else}}
-                        <li>
-                            <p>No Post Exits. Create one</p>
-                        </li>
-                    {{/each}}
-                    </ul>
+                <div class="large-12 columns ">
+                    <ol class="discussion">
+                        {{#each post in controller}}
+                            <li class="other" {{action 'navigateToDetails' post on='click'}}>
+                                <div class="avatar">
+                                <img src=""/>
+                                </div>
+                                <div class="messages messages_fullWidth">
+                                    {{#if post.isTextContent}}
+                                        <p>{{post.content}}</p>
+                                    {{else}}
+                                        <img src="data:image/png;base64,{{post.content}}" />
+                                    {{/if}}
+                                    <time datetime="{{post.postDate}}">{{moment_date post.postDate}}</time>
+                                </div>
+                            </li>
+                        {{else}}
+                            <li class="other">
+                                <div class="messages">
+                                    <p>No Post Exits. Create one</p>
+                                </div>
+                            </li>
+                        {{/each}}
+                    </ol>
+                </div>
+            </div>
+            {{else}}
+                <div id="spinner" class="preloader"></div>
+            {{/if}}
+        </script>
+        
+        <script type="text/x-handlebars" id="feeds/feed">
+            <h2>Feeds Discussion</h2>
+            {{#if controller.dataLoaded}}
+            <div class="row">
+                <div class="large-12 columns ">
+                    <ol class="discussion">
+                        {{#if controller.content}}
+                            <li class="other">
+                                <div class="messages messages_fullWidth">
+                                    {{#if controller.content.isTextContent}}
+                                        <p>{{controller.content.content}}</p>
+                                    {{else}}
+                                        <img src="data:image/png;base64,{{controller.content.content}}" />
+                                    {{/if}}
+                                    <time datetime="{{controller.content.postDate}}">{{moment_date controller.content.postDate}}</time>
+                                </div>
+                            </li>
+                            {{#each discuss in controller.content.discussion}}
+                                <li class="self other">
+                                    <div class="messages messages_60Width">
+                                        <p>{{discuss.note}}</p>
+                                        <time datetime="{{discuss.Date}}">{{moment_date discuss.Date}}</time>
+                                    </div>
+                                </li>
+                            {{else}}
+                                <li class="self other">
+                                    <div class="messages messages_60Width">
+                                        <p>No Comments yet! Post one.</p>
+                                    </div>
+                                </li>
+                            {{/each}}
+                            <li class="self other">
+                                <div class="messages messages_60Width">
+                                    {{view Ember.TextArea placeholder="Comment..." valueBinding="newComment"}}
+                                    {{#if newCommentError}} <small class="error">Error, Correct and retry.</small> {{/if}}
+                                    <button {{action "postComment"}} class="button small radius" style="float:right;">Comment</button> 
+                                </div>
+                            </li>
+                        {{/if}}
+                    </ol>
                 </div>
             </div>
             {{else}}
@@ -131,32 +178,80 @@
             </div>
         </script>
 
-        <script type="text/x-handlebars" id="messages">
+        <script type="text/x-handlebars" id="messages/index">
             <h2>Messages</h2>
             {{#if controller.dataLoaded}}
             <div class="row">
                 <div class="large-12 columns">
-                    <ul class="no-bullet">
-                    {{#each message in controller}}
-                        <li>
-                            <div class="postTitle">Conversation Between {{message.participant1}} and {{message.participant2}}
-                                <span>{{moment_date message.lastMessageDate}}</span>
-                            </div>
-                        </li>
-                    {{else}}
-                        <li>
-                            <p>No Private Conversation. Add a friend to create one.</p>
-                        </li>
-                    {{/each}}
-                    </ul>
+                    <ol class="discussion">
+                        {{#each message in controller}}
+                            <li class="other" {{action 'navigateToDetails' message on='click'}}>
+                                <div class="avatar">
+                                    <img src=""/>
+                                </div>
+                                <div class="messages messages_fullWidth">
+                                    <p>Conversation Between {{message.participant1}} and {{message.participant2}}</p>
+                                    <time datetime="{{message.lastMessageDate}}">{{moment_date message.lastMessageDate}}</time>
+                                </div>
+                            </li>
+                        {{else}}
+                            <li class="other">
+                                <div class="messages">
+                                    <p>No Private Conversation. Add a friend to create one.</p>
+                                </div>
+                            </li>
+                        {{/each}}
+                    </ol>
                 </div>
             </div>
             {{else}}
                 <div id="spinner" class="preloader"></div>
-            {{/if}}        
+            {{/if}}
         </script>
 
-        <script type="text/x-handlebars" id="friends">
+        <script type="text/x-handlebars" id="messages/message">
+            <div class="row">
+                <div class="large-12 columns">
+                    <div class="messages messages_fullWidth">
+                        <p>Conversation Between {{parentMessage.participant1}} and {{parentMessage.participant2}}</p>
+                        <br/>
+                        {{view Ember.TextArea placeholder="Shoutout...." valueBinding="newMessage"}}
+                        {{#if neewMessageError}} <small class="error">Error, Correct and retry.</small> {{/if}}
+                        <button {{action "sendMessage"}} class="button small radius" style="margin-bottom:0;">Send</button> 
+                    </div>
+                    {{#if controller.dataLoaded}}
+                    <ol class="discussion">
+                        {{#each discuss in controller}}
+                            {{#if discuss.isMe }}
+                                <li class="self">
+                            {{else}}
+                                <li class="other">
+                            {{/if}}
+                                <div class="avatar">
+                                    <img src=""/>
+                                </div>
+                                <div class="messages">
+                                    <p>{{discuss.note}}</p>
+                                    <time datetime="{{discuss.Date}}">{{moment_date discuss.Date}}</time>
+                                </div>
+                            </li>
+                        {{else}}
+                            <li class="other">
+                                <div class="messages">
+                                    <p>Message not started yet!</p>
+                                </div>
+                            </li>
+                        {{/each}}
+                    </ol>
+                    {{else}}
+                        <div id="spinner" class="preloader"></div>
+                    {{/if}}
+                </div>
+            </div>
+        </script>
+
+
+        <script type="text/x-handlebars" id="friends/index">
             <h2>Friends</h2>
             <div class="panel">
                 <p>Lorem ipsum dolor sit amet, cosecteturellus aliquet tellus.</p>
@@ -165,13 +260,35 @@
             </div>
         </script>
 
-        <script type="text/x-handlebars" id="chats">
-            <h2>Chat</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum 
-		    Integer imperdiet consequat nisi a faucibus. Phasellus aliquet tellus.</p>
-		    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum 
-		    pulvinar malesuada lacus luctus sit amet. Nullam dictum sem sapien, eu 
-		    Integer imperdiet consequat nisi a faucibus. Phasellus aliquet tellus.</p>
+        <script type="text/x-handlebars" id="chats/index">
+            <h2>Chats</h2>
+            {{#if controller.dataLoaded}}
+            <div class="row">
+                <div class="large-12 columns">
+                    <ol class="discussion">
+                        {{#each chat in controller}}
+                            <li class="other">
+                                <div class="avatar">
+                                    <img src=""/>
+                                </div>
+                                <div class="messages messages_fullWidth">
+                                    <p>Conversation Between {{message.participant1}} and {{message.participant2}}</p>
+                                    <time datetime="{{message.lastMessageDate}}">{{moment_date message.lastMessageDate}}</time>
+                                </div>
+                            </li>
+                        {{else}}
+                            <li class="other">
+                                <div class="messages">
+                                    <p>No Chat Conversation. Add a friend to create one.</p>
+                                </div>
+                            </li>
+                        {{/each}}
+                    </ol>
+                </div>
+            </div>
+            {{else}}
+                <div id="spinner" class="preloader"></div>
+            {{/if}}
         </script>
         
 
@@ -307,7 +424,7 @@
         </script>
 
         <script type="text/x-handlebars" id="admin">
-            <h2>Administrator's Section</h2>            
+            <h2>AdminZone</h2>            
             {{outlet}}
         </script>
 
@@ -455,7 +572,7 @@
                 <li > 
                     {{#linkTo 'user.password' }}
                         <i class="foundicon-lock"></i>Change Password 
-                    {{/linkTo}}} 
+                    {{/linkTo}} 
                 </li>
                 <li > 
                     <a {{action "logout"}}>
@@ -466,7 +583,7 @@
                 <li > 
                     {{#linkTo 'index' }}
                         <i class="foundicon-right-arrow"></i>Login
-                    {{/linkTo}}} 
+                    {{/linkTo}} 
                 </li>
             {{/if}}
             <li > 

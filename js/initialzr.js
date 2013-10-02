@@ -1,6 +1,6 @@
 (function (win) {
     win.Initialzr = Ember.Application.create({
-        VERSION: '2.0',
+        VERSION: '1.0',
         rootElement: '#emberApp',
         LOG_TRANSITIONS: true,
 
@@ -8,7 +8,7 @@
         dataStore: null,
         isOnline: false,
         ApplicationController: Ember.Controller.extend({
-            userBinding: 'Initialzr.auth' //Ember.Binding.oneWay('Initialzr.auth')
+            userBinding: 'Initialzr.auth'
         }),
 
         ready: function () {
@@ -16,7 +16,7 @@
 
             var prof = Initialzr.database.getItem('UserProfile');
             if (!Ember.isEmpty(prof)) {
-                Initialzr.set('auth', Initialzr.Profile.create($.parseJSON(prof)));
+                Initialzr.set('auth', Initialzr.Profile.create(Ember.$.parseJSON(prof)));
             }
         },
 

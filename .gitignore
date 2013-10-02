@@ -3,3 +3,6 @@
 /cordova.js
 /robots.txt
 /demo
+/phonegap.js
+/js/vendor/ember.js
+/js/vendor/ember.min.js

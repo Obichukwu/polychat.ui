@@ -36,15 +36,24 @@
     emberApp.Message  = Ember.Object.extend({
         messageId: null,
         lastMessageDate: null,
-        participant1: null,
-        participant2: null
+        participants: [],
+        participant1: Ember.computed(function() {
+            return this.get('participants')[0];
+        }).property('participants'),
+        participant2: Ember.computed(function() {
+            return this.get('participants')[1];
+        }).property('participants')
     });
 
     emberApp.MessageDiscussion  = Ember.Object.extend({
         messageDiscussionId: null,
+        messageId: null,
         note: null,
         date: null,
-        poster:null
+        posterId:null,
+        isMe: Ember.computed(function() {
+            return this.get('posterId') == emberApp.get('auth.profileId');
+        }).property('posterId')
     });
 
     emberApp.Post  = Ember.Object.extend({
@@ -61,6 +70,7 @@
 
     emberApp.PostDiscussion  = Ember.Object.extend({
         postDiscussionId: null,
+        postId: null,
         note: null,
         date: null,
         poster:null

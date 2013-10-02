@@ -23,7 +23,7 @@
 
         read: function (id) {
             var self = this;
-            return $.ajax({
+            return Ember.$.ajax({
                 url: this.baseAddress + self.get('store') + '/' + id,
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
@@ -36,7 +36,7 @@
 
         create: function (object) {
             var self = this;
-            return $.ajax({
+            return Ember.$.ajax({
                 url: this.baseAddress + self.get('store') + '/',
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
@@ -49,7 +49,7 @@
 
         update: function (id, object) {
             var self = this;
-            return $.ajax({
+            return Ember.$.ajax({
                 url: this.baseAddress + self.get('store') + '/' + id,
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
@@ -62,7 +62,7 @@
 
         deleteItem: function (id) {
             var self = this;
-            return $.ajax({
+            return Ember.$.ajax({
                 url: this.baseAddress + self.get('store') + '/' + id,
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
@@ -75,7 +75,7 @@
 
         loginObject: function (uname, pword) {
             var self = this;
-            return $.ajax({
+            return Ember.$.ajax({
                 url: this.baseAddress + self.get('store') + '/',
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
@@ -87,7 +87,7 @@
         },
         loginReadObject: function () {
             var self = this;
-            return $.ajax({
+            return Ember.$.ajax({
                 url: this.baseAddress + self.get('store') + '/',
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',
@@ -99,7 +99,7 @@
         },
         loginCreateObject: function (object) {
             var self = this;
-            return $.ajax({
+            return Ember.$.ajax({
                 url: this.baseAddress + self.get('store') + '/',
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8',

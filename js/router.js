@@ -7,7 +7,9 @@
             this.route('password');
         });
 
-        this.route('feeds');
+        this.resource('feeds', function () {
+            this.route('feed', { path: '/feed/:post_id' });
+        });
         this.resource('messages', function () {
             this.route('message', { path: '/message/:discussion_id' });
         });
@@ -26,7 +28,7 @@
     });
 
     emberApp.ApplicationRoute = Ember.Route.extend({
-        events: {
+        actions: {
             logout: function () {
                 this.set('controller.user', null);
                 Initialzr.database.removeItem('UserProfile');
@@ -62,7 +64,7 @@
                 controller.set('departments', dep)
             });
         },
-        events: {
+        actions: {
             easyLogin: function (type) {
                 loginValue = "";
                 if (type === 1) {
@@ -184,11 +186,10 @@
     });
 
     emberApp.UsersIndexRoute = emberApp.AuthRoute.extend({
-
     });
     emberApp.UsersPasswordRoute = emberApp.AuthRoute.extend({});
 
-    emberApp.FeedsRoute = emberApp.AuthRoute.extend({
+    emberApp.FeedsIndexRoute = emberApp.AuthRoute.extend({
         setupController: function (controller, model) {
             emberApp.dataStore.set('store', 'post');
             emberApp.dataStore.read('').then(function (result) {
@@ -200,27 +201,133 @@
                 controller.set('dataLoaded', true);
             });
         },
-        events: {
+        actions: {
+            navigateToDetails: function (post) {
+                this.transitionTo('feeds.feed', post);
+            },
             postNew: function () {
-                // do validation
                 var post = this.get('controller.newPost');
 
+                if (Ember.isEmpty(post)) {
+                    this.set('controller.newPostError', true);
+                    return;
+                }
+
                 var post = emberApp.Post.create();
-                post.set('content', this.get('controller.newPost'));
+                post.set('content', post);
                 post.set('postDate', new Date());
                 post.set('contentType', 1);
+
+                var auth = emberApp.get('auth');
+                post.set('ownerId', auth.get('profileId'));
 
                 this.set('controller.dataLoaded', true);
                 this.get("controller.content").pushObject(post);
 
+                var self = this;
+                emberApp.dataStore.create(post).then(function (result) {
+                    self.get('controller.content').removeObject(post);
+                    self.get("controller.content").pushObject(emberApp.Post.create(result));
+                });
+
                 this.set('controller.newPost', '');
             }
+        }
+    });
+    emberApp.FeedsFeedRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'postDiscussion');
+            controller.set('content', model);
+            controller.set('dataLoaded', true);
+        },
+        actions: {
+            postComment: function () {
+                var comment = this.get('controller.newComment');
 
+                if (Ember.isEmpty(comment)) {
+                    this.set('controller.newCommentError', true);
+                    return;
+                }
+
+                var postDiss = emberApp.PostDiscussion.create();
+                postDiss.set('postId', this.get('controller.content.postId'));
+                postDiss.set('note', comment);
+                postDiss.set('date', new Date());
+                var auth = emberApp.get('auth');
+                postDiss.set('posterId', auth.get('profileId'));
+
+                var diss = this.get("controller.content.discussion");
+                diss.pushObject(postDiss);
+                emberApp.dataStore.create(postDiss).then(function (result) {
+                    diss.removeObject(postDiss);
+                    diss.pushObject(emberApp.PostDiscussion.create(result));
+                });
+
+                this.set('controller.newComment', '');
+            }
         }
     });
 
-    emberApp.MessagesIndexRoute = emberApp.AuthRoute.extend({});
-    emberApp.MessagesMessageRoute = emberApp.AuthRoute.extend({});
+    emberApp.MessagesIndexRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'message');
+            emberApp.dataStore.read('').then(function (result) {
+                var dataItems = [];
+                result.forEach(function (item) {
+                    dataItems.pushObject(emberApp.Message.create(item));
+                });
+                controller.set("content", dataItems);
+                controller.set('dataLoaded', true);
+            });
+        },
+        actions: {
+            navigateToDetails: function (post) {
+                this.transitionTo('messages.message', post);
+            }
+        }
+    });
+    emberApp.MessagesMessageRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'message');
+            controller.set('parentMessage', model);
+            var msgId = model.get('messageId');
+            emberApp.dataStore.read(msgId).then(function (result) {
+                var dataItems = [];
+                result.forEach(function (item) {
+                    dataItems.pushObject(emberApp.MessageDiscussion.create(item));
+                });
+                controller.set("content", dataItems);
+                controller.set('dataLoaded', true);
+            });
+        },
+        actions: {
+            sendMessage: function () {
+                var message = this.get('controller.newMessage');
+
+                if (Ember.isEmpty(message)) {
+                    this.set('controller.newMessageError', true);
+                    return;
+                }
+
+                var messageDiss = emberApp.MessageDiscussion.create();
+                messageDiss.set('messageId', this.get('controller.parentMessage.messageId'));
+                messageDiss.set('note', message);
+                messageDiss.set('date', new Date());
+                var auth = emberApp.get('auth');
+                messageDiss.set('posterId', auth.get('profileId'));
+
+                var diss = this.get("controller.content");
+                diss.pushObject(messageDiss);
+                emberApp.dataStore.create(messageDiss).then(function (result) {
+                    diss.removeObject(messageDiss);
+                    diss.pushObject(emberApp.MessageDiscussion.create(result));
+                });
+
+                this.set('controller.newMessage', '');
+            }
+        //Todo: Every 1mins update the message list.
+        }
+    });
 
     emberApp.FriendsIndexRoute = emberApp.AuthRoute.extend({});
     emberApp.FriendsFriendRoute = emberApp.AuthRoute.extend({});
@@ -241,7 +348,7 @@
                 controller.set('dataLoaded', true);
             });
         },
-        events: {
+        actions: {
             create: function () {
                 var ob = emberApp.Faculty.create();
                 ob.set('facultyId', 0);
@@ -312,7 +419,7 @@
                 controller.set('dataLoaded', true);
             });
         },
-        events: {
+        actions: {
             create: function () {
                 var ob = emberApp.Department.create();
                 ob.set('departmentId', 0);
@@ -381,7 +488,7 @@
                 controller.set('dataLoaded', true);
             });
         },
-        events: {
+        actions: {
             create: function () {
                 var ob = emberApp.Faculty.create();
                 ob.set('facultyId', 0);
@@ -434,16 +541,17 @@
     });
 
     emberApp.ApplicationView = Em.View.extend({
-        template: 'application',
         didInsertElement: function () {
-            this.$('a.toggle-menu').on('click', function (e) {
-                var el = $(this).parents('#header').siblings('.wrapper').find('.inner');
-                if (el.hasClass('show-menu')) {
-                    el.removeClass('show-menu');
-                } else {
-                    el.addClass('show-menu');
-                }
-            })
+            this.$('a.toggle-menu').on('click', this.maMenuClick);
+            this.$('#nav-list').on('click', 'li a', this.maMenuClick);
+        },
+        maMenuClick: function (e) {
+            var el = $('#header').siblings('.wrapper').find('.inner');
+            if (el.hasClass('show-menu')) {
+                el.removeClass('show-menu');
+            } else {
+                el.addClass('show-menu');
+            }
         }
     });
 })(window.Initialzr);
