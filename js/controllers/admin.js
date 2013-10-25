@@ -25,6 +25,11 @@
         content: [],
         sortProperties: ['firstName', 'lastName'],
         sortAscending: true,
+        currentEdit: null,
+        gender: ["Male", "Female"],
+        roles: [Ember.Object.create({ title: 'Administrator', id: 1 }),
+            Ember.Object.create({ title: 'User', id: 2 })],
+        departments: [],
 
         dataLoaded: false
     });

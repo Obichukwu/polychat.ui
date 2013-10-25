@@ -11,7 +11,18 @@
         }
     });
 
-    emberApp.UsersIndexController = Ember.ObjectController.extend({});
-    emberApp.UsersPasswordController = Ember.ObjectController.extend({});
+    emberApp.UserIndexController = Ember.ObjectController.extend({
+        content: null,
+        gender: ["Male", "Female"]
+    });
+    emberApp.UserPasswordController = Ember.ObjectController.extend({
+        oldPassword:null,
+        newPassword:null,
+        newPassword2:null,
+
+        oldPasswordError:null,
+        newPasswordError:null,
+        newPasswordError2:null
+    });
 
 })(window.Initialzr)

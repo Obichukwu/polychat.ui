@@ -30,11 +30,32 @@
         dataLoaded: false
     });
 
-    emberApp.FriendsIndexController = Ember.ArrayController.extend({});
-    emberApp.FriendsFriendController = Ember.ObjectController.extend({});
+    emberApp.FriendsIndexController = Ember.ArrayController.extend({
+        content: [],
+        sortProperties: ['firstName', 'lastName'],
+        sortAscending: true,
+        departments: [],
+        selectedDepartmentId:0,
 
-    emberApp.ChatsIndexController = Ember.ArrayController.extend({});
-    emberApp.ChatsChatroomController = Ember.ArrayController.extend({});
+        searchLoaded: false
+    });
+
+    emberApp.ChatsIndexController = Ember.ArrayController.extend({
+        content: [],
+        sortProperties: ['title'],
+        sortAscending: true,
+
+        dataLoaded: false
+    });
+    emberApp.ChatsChatController = Ember.ArrayController.extend({
+        content: [],
+        sortProperties: ['date'],
+        sortAscending: false,
+        department:null,
+
+        newMessage: null,
+        dataLoaded: false
+    });
 
     emberApp.AboutController = Ember.ObjectController.extend({});
 })(window.Initialzr)

@@ -17,13 +17,14 @@
         description: null
     });
 
-    emberApp.Profile  = Ember.Object.extend({
+    emberApp.Profile  = emberApp.BaseObject.extend({
         profileId: null,
         firstName: null,
         lastName: null,
         sex: null,
         about: null,
         email: null,
+        password: null,
         phone:null,
         roleId: null,
         departmentId:null,
@@ -62,6 +63,11 @@
         content: null,
         contentType: null,
         ownerId: null,
+        ownername:null,
+
+        isMe: Ember.computed(function() {
+            return this.get('ownerId') == emberApp.get('auth.profileId');
+        }).property('ownerId'),
 
         isTextContent: Ember.computed(function() {
             return this.get('contentType') == 1;
@@ -79,7 +85,13 @@
     emberApp.ChatDiscussion  = Ember.Object.extend({
         chatDiscussionId: null,
         note: null,
-        date: null
+        date: null,
+        departmentId:null,
+        profileId:null,
+
+        isMe: Ember.computed(function() {
+            return this.get('profileId') == emberApp.get('auth.profileId');
+        }).property('profileId')
     });
     
     emberApp.AccountModel  = Ember.Object.extend({

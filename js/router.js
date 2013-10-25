@@ -14,8 +14,9 @@
             this.route('message', { path: '/message/:discussion_id' });
         });
         this.resource('friends', function () {
-            this.route('friend', { path: '/friend/:profile_id' });
+            this.route('friend', { path: '/friend/:discussion_id' });
         });
+
         this.resource('chats', function () {
             this.route('chat', { path: '/chat/:chatroom_id' });
         });
@@ -68,9 +69,9 @@
             easyLogin: function (type) {
                 loginValue = "";
                 if (type === 1) {
-                    loginValue = '{"profileId":2,"firstName":"Christabel","lastName":"Ika","sex":"female","about":"Fun loving and high spirited girl","email":"ika@polychat.com","password":"student","roleId":1,"departmentId":1,"authToken":"aWthQHBvbHljaGF0LmNvbTpzdHVkZW50"}';
+                    loginValue = '{"profileId":2,"firstName":"Christabel","lastName":"Ika","sex":"Female","about":"Fun loving and high spirited girl","email":"ika@polychat.com","password":"student","roleId":1,"departmentId":1,"authToken":"aWthQHBvbHljaGF0LmNvbTpzdHVkZW50"}';
                 } else {
-                    loginValue = '{"profileId":2,"firstName":"Christabel","lastName":"Ika","sex":"female","about":"Fun loving and high spirited girl","email":"ika@polychat.com","password":"student","roleId":2,"departmentId":1,"authToken":"aWthQHBvbHljaGF0LmNvbTpzdHVkZW50"}';
+                    loginValue = '{"profileId":2,"firstName":"Christabel","lastName":"Ika","sex":"Female","about":"Fun loving and high spirited girl","email":"ika@polychat.com","password":"student","roleId":2,"departmentId":1,"authToken":"aWthQHBvbHljaGF0LmNvbTpzdHVkZW50"}';
                 }
 
                 emberApp.set('auth', emberApp.Profile.create($.parseJSON(loginValue)));
@@ -109,7 +110,7 @@
                     }
                 });
             },
-            register: function (model) {
+            register: function () {
                 var model = this.get('controller.content');
 
                 var isError = false;
@@ -163,9 +164,10 @@
                 }
 
                 var self = this;
-                this.get('datastore').loginCreateObject(model).then(function (result) {
+                emberApp.dataStore.loginCreateObject(model).then(function (result) {
                     emberApp.set('auth', emberApp.Profile.create(result));
-                    self.transitionToRoute("feeds");
+                    Initialzr.database.setItem('UserProfile', JSON.stringify(result));
+                    self.transitionTo("feeds");
                 });
             }
         }
@@ -185,9 +187,97 @@
         }
     });
 
-    emberApp.UsersIndexRoute = emberApp.AuthRoute.extend({
+    emberApp.UserIndexRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'profile');
+            var auth = emberApp.get('auth');
+            controller.set("content", auth);
+
+        },
+        actions: {
+            updateInfo: function () {
+                var model = this.get("controller.content");
+
+                var isError = false;
+                if (Ember.isEmpty(model.get('firstName'))) {
+                    this.set('controller.firstNameError', true);
+                    isError = true;
+                }
+                if (Ember.isEmpty(model.get('lastName'))) {
+                    this.set('controller.lastNameError', true);
+                    isError = true;
+                }
+                if (Ember.isEmpty(model.get('about'))) {
+                    this.set('controller.aboutError', true);
+                    isError = true;
+                }
+
+                if (isError) {
+                    return;
+                }
+
+                emberApp.dataStore.update(model.get('profileId'), model).then(function (result) {
+                    emberApp.set('auth', emberApp.Profile.create(result));
+                    Initialzr.database.setItem('UserProfile', JSON.stringify(result));
+                });
+            }
+        }
     });
-    emberApp.UsersPasswordRoute = emberApp.AuthRoute.extend({});
+    emberApp.UserPasswordRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'profile');
+            controller.set("oldPassword", '');
+            controller.set("newPassword", '');
+            controller.set("newPassword2", '');
+        },
+        actions: {
+            updatePassword: function () {
+                var oldPwd = this.get("controller.oldPassword");
+                var newPwd = this.get("controller.newPassword");
+                var newPwd2 = this.get("controller.newPassword2");
+
+                var isError = false;
+                this.set('controller.oldPasswordError', false);
+                this.set('controller.newPasswordError', false);
+                this.set('controller.newPasswordError2', false);
+
+                if (Ember.isEmpty(oldPwd)) {
+                    this.set('controller.oldPasswordError', true);
+                    isError = true;
+                }
+                if (Ember.isEmpty(newPwd)) {
+                    this.set('controller.newPasswordError', true);
+                    isError = true;
+                }
+                if (Ember.isEmpty(newPwd2)) {
+                    this.set('controller.newPasswordError2', true);
+                    isError = true;
+                }
+
+                if (newPwd !== newPwd2) {
+                    this.set('controller.newPasswordError2', true);
+                    isError = true;
+                }
+
+                var auth = emberApp.get('auth');
+
+                if (auth.get('password') !== oldPwd) {
+                    this.set('controller.oldPasswordError', true);
+                    isError = true;
+                }
+
+                if (isError) {
+                    return;
+                }
+
+                auth.set('password', newPwd);
+                emberApp.dataStore.update(auth.get('profileId'), auth).then(function (result) {
+                    emberApp.set('auth', emberApp.Profile.create(result));
+                    Initialzr.database.setItem('UserProfile', JSON.stringify(result));
+                });
+            }
+        }
+    });
 
     emberApp.FeedsIndexRoute = emberApp.AuthRoute.extend({
         setupController: function (controller, model) {
@@ -325,15 +415,126 @@
 
                 this.set('controller.newMessage', '');
             }
-        //Todo: Every 1mins update the message list.
+            //Todo: Every 1mins update the message list.
         }
     });
 
-    emberApp.FriendsIndexRoute = emberApp.AuthRoute.extend({});
-    emberApp.FriendsFriendRoute = emberApp.AuthRoute.extend({});
+    emberApp.FriendsIndexRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'department');
+            emberApp.dataStore.read('').then(function (result) {
+                var dataItems = [];
+                result.forEach(function (item) {
+                    dataItems.pushObject(Ember.Object.create({ title: item.title, id: item.departmentId }));
+                });
+                controller.set("departments", dataItems);
+            });
 
-    emberApp.ChatsIndexRoute = emberApp.AuthRoute.extend({});
-    emberApp.ChatsChatroomRoute = emberApp.AuthRoute.extend({});
+            emberApp.dataStore.set('store', 'Department2');
+            emberApp.dataStore.read(0).then(function (result) {
+                var dataItems = [];
+                result.forEach(function (item) {
+                    dataItems.pushObject(emberApp.Profile.create(item));
+                });
+                controller.set("content", dataItems);
+                controller.set('searchLoaded', true);
+            });
+        },
+        actions: {
+            search: function () {
+                var selId = this.get('controller.selectedDepartmentId');
+                if (Ember.isEmpty(selId))
+                    selId = 0;
+
+                this.set('controller.searchLoaded', false);
+                emberApp.dataStore.set('store', 'Department2');
+
+                var self = this;
+                emberApp.dataStore.read(selId).then(function (result) {
+                    var dataItems = [];
+                    result.forEach(function (item) {
+                        dataItems.pushObject(emberApp.Profile.create(item));
+                    });
+                    self.set("controller.content", dataItems);
+                    self.set('controller.searchLoaded', true);
+                });
+            },
+            message: function (profile) {
+                var proId = profile.get('profileId');
+
+                emberApp.dataStore.set('store', 'Message');
+                var self = this;
+                //Abusing the Delete Method, i am using it as a select method
+                emberApp.dataStore.deleteItem(proId).then(function (result) {
+                    var msg = emberApp.Message.create(result)
+                    self.transitionTo('messages.message', msg);
+                });
+            }
+        }
+    });
+
+    emberApp.ChatsIndexRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'department');
+            emberApp.dataStore.read('').then(function (result) {
+                var dataItems = [];
+                result.forEach(function (item) {
+                    dataItems.pushObject(emberApp.Department.create(item));
+                });
+                controller.set("content", dataItems);
+                controller.set("dataLoaded", true);
+            });
+        },
+        actions: {
+            enterRoom: function (dept) {
+                //var deptId = dept.get('departmentId');
+                this.transitionTo('chats.chat', dept);
+            }
+        }
+    });
+    emberApp.ChatsChatRoute = emberApp.AuthRoute.extend({
+        setupController: function (controller, model) {
+            emberApp.dataStore.set('store', 'chat');
+            controller.set('department', model);
+            var msgId = model.get('departmentId');
+            emberApp.dataStore.read(msgId).then(function (result) {
+                var dataItems = [];
+                result.forEach(function (item) {
+                    dataItems.pushObject(emberApp.ChatDiscussion.create(item));
+                });
+                controller.set("content", dataItems);
+                controller.set('dataLoaded', true);
+            });
+        },
+        actions: {
+            sendMessage: function () {
+                var message = this.get('controller.newMessage');
+
+                if (Ember.isEmpty(message)) {
+                    this.set('controller.newMessageError', true);
+                    return;
+                }
+                this.set('controller.newMessageError', false);
+
+                var messageDiss = emberApp.ChatDiscussion.create();
+                messageDiss.set('departmentId', this.get('controller.department.departmentId'));
+                messageDiss.set('note', message);
+                messageDiss.set('date', new Date());
+                var auth = emberApp.get('auth');
+                messageDiss.set('profileId', auth.get('profileId'));
+
+                var diss = this.get("controller.content");
+                diss.pushObject(messageDiss);
+                emberApp.dataStore.create(messageDiss).then(function (result) {
+                    diss.removeObject(messageDiss);
+                    diss.pushObject(emberApp.ChatDiscussion.create(result));
+                });
+
+                this.set('controller.newMessage', '');
+            }
+            //Todo: Every 1mins update the message list.
+        }
+    });
 
 
     emberApp.AdminFacultiesRoute = emberApp.AuthRoute.extend({
@@ -395,7 +596,7 @@
             },
             remove: function (model) {
                 emberApp.dataStore.deleteItem(model.get('facultyId'));
-                this.get('content').removeObject(model);
+                this.get('controller.content').removeObject(model);
             }
         }
     });
@@ -407,7 +608,7 @@
                 result.forEach(function (item) {
                     fac.pushObject(Ember.Object.create({ title: item.title, id: item.facultyId }));
                 });
-                controller.set("faculties", dataItems);
+                controller.set("faculties", fac);
             });
             emberApp.dataStore.set('store', 'department');
             emberApp.dataStore.read('').then(function (result) {
@@ -478,11 +679,20 @@
     });
     emberApp.AdminProfilesRoute = emberApp.AuthRoute.extend({
         setupController: function (controller, model) {
-            emberApp.dataStore.set('store', 'faculty');
+            emberApp.dataStore.set('store', 'department');
             emberApp.dataStore.read('').then(function (result) {
                 var dataItems = [];
                 result.forEach(function (item) {
-                    dataItems.pushObject(emberApp.Faculty.create(item));
+                    dataItems.pushObject(Ember.Object.create({ title: item.title, id: item.departmentId }));
+                });
+                controller.set("departments", dataItems);
+            });
+
+            emberApp.dataStore.set('store', 'profile');
+            emberApp.dataStore.read('').then(function (result) {
+                var dataItems = [];
+                result.forEach(function (item) {
+                    dataItems.pushObject(emberApp.Profile.create(item));
                 });
                 controller.set("content", dataItems);
                 controller.set('dataLoaded', true);
@@ -491,23 +701,26 @@
         actions: {
             create: function () {
                 var ob = emberApp.Faculty.create();
-                ob.set('facultyId', 0);
+                ob.set('profileId', 0);
                 ob.set('isEditing', true);
-
-                this.set('controller.editTitle', '');
-                this.set('controller.editDescription', '');
+                ob.set('password', 'password');
 
                 this.get('controller.content').pushObject(ob);
+
+                var cpy = emberApp.Faculty.create();
+
+                this.set('controller.currentEdit', cpy);
             },
             edit: function (model) {
-                this.set('controller.editTitle', model.get('title'));
-                this.set('controller.editDescription', model.get('description'));
-
                 model.set('isEditing', true);
+
+                var dtr = JSON.stringify(model)
+                var cpy = Initialzr.Profile.create(Ember.$.parseJSON(dtr));
+
+                this.set('controller.currentEdit', cpy);
             },
             cancel: function (model) {
-                this.set('controller.editTitle', '');
-                this.set('controller.editDescription', '');
+                this.set('controller.currentEdit', null);
 
                 if (model.get('facultyId') > 0)
                     model.set('isEditing', false);
@@ -517,25 +730,30 @@
             save: function (model) {
                 model.set('isEditing', false);
 
-                model.set('title', this.get('controller.editTitle'));
-                model.set('description', this.get('controller.editDescription'));
+                var cpy = this.get('controller.currentEdit');
+                model.set('departmentId', cpy.get('departmentId'));
+                model.set('firstName', cpy.get('firstName'));
+                model.set('lastName', cpy.get('lastName'));
+                model.set('sex', cpy.get('sex'));
+                model.set('about', cpy.get('about'));
+                model.set('email', cpy.get('email'));
+                model.set('phone', cpy.get('phone'));
 
-                if (model.get('facultyId') > 0)
-                    emberApp.dataStore.update(model.get('facultyId'), model);
+                if (model.get('profileId') > 0)
+                    emberApp.dataStore.update(model.get('profileId'), model);
                 else {
                     var self = this;
                     emberApp.dataStore.create(model).then(function (result) {
-                        self.get("controller.content").pushObject(emberApp.Faculty.create(result));
+                        self.get("controller.content").pushObject(emberApp.Profile.create(result));
                     });
                     this.get('controller.content').removeObject(model);
                 }
-                this.set('controller.editTitle', '');
-                this.set('controller.editDescription', '');
+                this.set('controller.currentEdit', null);
 
             },
             remove: function (model) {
-                emberApp.dataStore.deleteItem(model.get('facultyId'));
-                this.get('content').removeObject(model);
+                emberApp.dataStore.deleteItem(model.get('profileId'));
+                this.get('controller.content').removeObject(model);
             }
         }
     });

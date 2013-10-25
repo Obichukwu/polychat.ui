@@ -17,7 +17,7 @@
         
         <script type="text/javascript" src="js/vendor/jquery-2.0.3.min.js"></script>
         <script type="text/javascript" src="js/vendor/handlebars-1.0.0.js"></script>
-        <script type="text/javascript" src="js/vendor/ember.prod.js"></script>
+        <script type="text/javascript" src="js/vendor/ember.js"></script>
         <!--<script type="text/javascript" src="js/vendor/ember.fastclick.js"></script>-->
         <script type="text/javascript" src="js/vendor/moment.min.js"></script>
 
@@ -85,16 +85,24 @@
                     <ol class="discussion">
                         {{#each post in controller}}
                             <li class="other" {{action 'navigateToDetails' post on='click'}}>
-                                <div class="avatar">
-                                <img src=""/>
-                                </div>
+                                {{#if post.isMe }}
+                                    <li class="self">
+                                        <div class="avatar">
+                                            <img src="me.png"/>
+                                        </div>
+                                {{else}}
+                                    <li class="other">
+                                        <div class="avatar">
+                                            <img src="you.png"/>
+                                        </div>
+                                {{/if}}
                                 <div class="messages messages_fullWidth">
                                     {{#if post.isTextContent}}
                                         <p>{{post.content}}</p>
                                     {{else}}
                                         <img src="data:image/png;base64,{{post.content}}" />
                                     {{/if}}
-                                    <time datetime="{{post.postDate}}">{{moment_date post.postDate}}</time>
+                                    <time datetime="{{post.postDate}}">{{post.ownername}} ( {{moment_date post.postDate}} )</time>
                                 </div>
                             </li>
                         {{else}}
@@ -160,21 +168,105 @@
         </script>
         
         <script type="text/x-handlebars" id="user">
-            <h2>Account Info</h2>
+            <h4>Account Info</h4>
             {{outlet}}
         </script>
 
         <script type="text/x-handlebars" id="user/index">
             <p>About Me</p>
             <div class="panel">
-                <p>Profile Info</p>
+                <form>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Email</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Email Address" valueBinding="content.email" Readonly="true"}}
+                            {{#if content.emailError}} <small class="error">Invalid Email Address</small> {{/if}}
+                        </div>
+                    </div>                    
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Firstname </span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Firstname" valueBinding="content.firstName"}}
+                            {{#if content.firstNameError}} <small class="error">Invalid Firstname</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Lastname</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Lastname" valueBinding="content.lastName"}}
+                            {{#if content.lastNameError}} <small class="error">Invalid Lastname</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Sex</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.Select contentBinding="gender" valueBinding="content.sex" prompt="Please select your sex"}}
+                            {{#if content.sexError}} <small class="error">Invalid Sex</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">About</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextArea placeholder="About Me" valueBinding="content.about"}}
+                            {{#if content.aboutError}} <small class="error">Invalid About details</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="small-12 large-12 text-right columns">
+                            <button {{action "updateInfo"}} class="button radius">Update</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </script>
 
         <script type="text/x-handlebars" id="user/password">
             <p>Change Password</p>
             <div class="panel">
-                <p>change password</p>
+                <form>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Old Password</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Password" valueBinding="oldPassword" type="password"}}
+                            {{#if oldPasswordError}} <small class="error">Invalid Old Password</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Password</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Password" valueBinding="newPassword" type="password"}}
+                            {{#if newPasswordError}} <small class="error">Invalid New Password</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Confirm Password</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Password" valueBinding="newPassword2" type="password"}}
+                            {{#if newPasswordError2}} <small class="error">New Password did not match</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="small-12 large-12 text-right columns">
+                            <button {{action "updatePassword"}} class="button radius">Update</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </script>
 
@@ -186,9 +278,6 @@
                     <ol class="discussion">
                         {{#each message in controller}}
                             <li class="other" {{action 'navigateToDetails' message on='click'}}>
-                                <div class="avatar">
-                                    <img src=""/>
-                                </div>
                                 <div class="messages messages_fullWidth">
                                     <p>Conversation Between {{message.participant1}} and {{message.participant2}}</p>
                                     <time datetime="{{message.lastMessageDate}}">{{moment_date message.lastMessageDate}}</time>
@@ -196,7 +285,7 @@
                             </li>
                         {{else}}
                             <li class="other">
-                                <div class="messages">
+                                <div class="messages messages_fullWidth">
                                     <p>No Private Conversation. Add a friend to create one.</p>
                                 </div>
                             </li>
@@ -224,12 +313,15 @@
                         {{#each discuss in controller}}
                             {{#if discuss.isMe }}
                                 <li class="self">
+                                    <div class="avatar">
+                                        <img src="me.png"/>
+                                    </div>
                             {{else}}
                                 <li class="other">
+                                    <div class="avatar">
+                                        <img src="you.png"/>
+                                    </div>
                             {{/if}}
-                                <div class="avatar">
-                                    <img src=""/>
-                                </div>
                                 <div class="messages">
                                     <p>{{discuss.note}}</p>
                                     <time datetime="{{discuss.Date}}">{{moment_date discuss.Date}}</time>
@@ -253,47 +345,110 @@
 
         <script type="text/x-handlebars" id="friends/index">
             <h2>Friends</h2>
-            <div class="panel">
-                <p>Lorem ipsum dolor sit amet, cosecteturellus aliquet tellus.</p>
-		        <p>Lorem ipsum dolor sit amet, consecteNullam dictum sem sapien, eu 
-		        Integer imperdiet consequat nisi a faucibus. Phasellus aliquet tellus.</p>
+            <div class="row collapse">
+                <div class="small-9 large-10 columns">
+                    {{view Ember.Select contentBinding="controller.departments" optionValuePath="content.id" optionLabelPath="content.title"
+                        valueBinding="controller.selectedDepartmentId" prompt="Please select your department"}}                           
+                </div>
+                <div class="small-3 large-2 columns">
+                    <button {{action "search"}} class="button small radius">Search</button>
+                </div>
             </div>
+
+            {{#if controller.searchLoaded}}
+                <ol class="discussion">
+                {{#each profile in controller}}
+		            <li class="other">
+                        <div class="messages messages_fullWidth">
+			                <h5>{{profile.firstName}} {{profile.lastName}} ({{profile.email}} )</h5>
+                            <p>{{profile.about}} </p>   
+                            <button {{action "message" profile}} class="button small radius">Message</button>
+                        <div>
+                    <li>
+                {{else}}
+                    <li class="other">
+                        <div class="messages messages_fullWidth">
+                            <p>No profile Exits in department</p>
+                        </div>
+                    </li>
+                {{/each}}
+                </ol>
+            {{else}}
+                <div id="spinner" class="preloader"></div>
+            {{/if}}
         </script>
 
         <script type="text/x-handlebars" id="chats/index">
-            <h2>Chats</h2>
-            {{#if controller.dataLoaded}}
-            <div class="row">
-                <div class="large-12 columns">
-                    <ol class="discussion">
-                        {{#each chat in controller}}
-                            <li class="other">
-                                <div class="avatar">
-                                    <img src=""/>
-                                </div>
-                                <div class="messages messages_fullWidth">
-                                    <p>Conversation Between {{message.participant1}} and {{message.participant2}}</p>
-                                    <time datetime="{{message.lastMessageDate}}">{{moment_date message.lastMessageDate}}</time>
-                                </div>
-                            </li>
-                        {{else}}
-                            <li class="other">
-                                <div class="messages">
-                                    <p>No Chat Conversation. Add a friend to create one.</p>
-                                </div>
-                            </li>
-                        {{/each}}
-                    </ol>
-                </div>
-            </div>
+            <h4>Chat Rooms</h4>
+            {{#if controller.dataLoaded }}
+            <ol class="discussion">
+                {{#each department in controller}}
+                <li class="other" {{action 'enterRoom' department on='click'}}>
+                    <div class="messages messages_fullWidth">
+                        <h5> {{department.title}}</h5>
+                        <p>{{department.description}} </p>   
+                    </div>
+                </li>
+                {{else}}
+                    <li class="other">
+                        <div class="messages messages_fullWidth">
+                            <p>No Chatroom Exits. Report to Admin</p>
+                        </div>
+                    </li>
+                {{/each}}
+                </ol>
             {{else}}
                 <div id="spinner" class="preloader"></div>
             {{/if}}
         </script>
         
+        <script type="text/x-handlebars" id="chats/chat">
+            <div class="row">
+                <div class="large-12 columns">
+                    <div class="messages messages_fullWidth">
+                        <p>{{controller.department.Title}} Chatroom</p>
+                        <br/>
+                        {{view Ember.TextArea placeholder="Message...." valueBinding="newMessage"}}
+                        {{#if neewMessageError}} <small class="error">Error, Correct and retry.</small> {{/if}}
+                        <button {{action "sendMessage"}} class="button small radius" style="margin-bottom:0;">Send</button> 
+                    </div>
+                    {{#if controller.dataLoaded}}
+                    <ol class="discussion">
+                        {{#each discuss in controller}}
+                            {{#if discuss.isMe }}
+                                <li class="self">
+                                    <div class="avatar">
+                                        <img src="me.png"/>
+                                    </div>
+                            {{else}}
+                                <li class="other">
+                                    <div class="avatar">
+                                        <img src="you.png"/>
+                                    </div>
+                            {{/if}}
+                                <div class="messages">
+                                    <p>{{discuss.note}}</p>
+                                    <time datetime="{{discuss.Date}}">{{moment_date discuss.Date}}</time>
+                                </div>
+                            </li>
+                        {{else}}
+                            <li class="other">
+                                <div class="messages">
+                                    <p>Chat not started yet!</p>
+                                </div>
+                            </li>
+                        {{/each}}
+                    </ol>
+                    {{else}}
+                        <div id="spinner" class="preloader"></div>
+                    {{/if}}
+                </div>
+            </div>
+        </script>
+
 
         <script type="text/x-handlebars" id="about">
-            <h2>About</h2>
+            <h4>About</h4>
             <div class="panel">
                 <p>Look all around you, there exists various social network platforms that engages you and occupy your time.</p>
                 <p>If you find yourself asking this question "what had social network give to me?"</p>
@@ -326,14 +481,14 @@
                     </div>
                     <div class="row">
                         <div class="small-12 large-12 text-right columns">
-                            <button {{action "SwitchView" 1 target="controller"}} class="button radius" >Register</button>
-                            <button {{action "login"}} class="button radius" >Login</button>
+                            <a {{action "SwitchView" 1 target="controller"}} class="button small radius" >Register</a>
+                            <button {{action "login"}} class="button small radius" >Login</button>
                         </div>
                     </div>
                     <div class="row">
                         <div class="small-12 large-12 text-right columns">
-                            <button {{action "easyLogin" 1}} class="button radius">Easy Admin</button>
-                            <button {{action "easyLogin" 2}} class="button radius">Easy User</button>
+                            <button {{action "easyLogin" 1}} class="button small radius">Easy Admin</button>
+                            <button {{action "easyLogin" 2}} class="button small radius">Easy User</button>
                         </div>
                     </div>
                 </form>    
@@ -415,8 +570,8 @@
                     </div>
                     <div class="row">
                         <div class="small-12 large-12 text-right columns">
-                            <button {{action "SwitchView" 0 target="controller"}} class="button radius" >Login</button>
-                            <button {{action "register"}} class="button radius">Register</button>
+                            <a {{action "SwitchView" 0 target="controller"}} class="button small radius" >Login</a>
+                            <button {{action "register"}} class="button small radius">Register</button>
                         </div>
                     </div>
                 </form>
@@ -424,47 +579,55 @@
         </script>
 
         <script type="text/x-handlebars" id="admin">
-            <h2>AdminZone</h2>            
             {{outlet}}
         </script>
 
         <script type="text/x-handlebars" id="admin/faculties">
+            <h4>Manage Schools</h4>  
             {{#if controller.dataLoaded }}
-                <button {{action "create" target="controller"}} class="button radius">Create</button>
-                <ul class="no-bullet">
+            <button {{action "create" target="controller"}} class="button small radius">Create</button>
+            <ol class="discussion">
                 {{#each faculty in controller}}
-                <li >
+                <li class="other">
+                    <div class="messages messages_fullWidth">
                     {{#if faculty.isEditing }}
                     <form>
-                        <div class="row">
-                          <div class="large-12 columns">
-                            <label>Title</label>
+                       <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Title</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
                             {{view Ember.TextField placeholder="title" valueBinding="controller.editTitle"}}
                           </div>
                         </div>
-                        <div class="row">
-                          <div class="large-12 columns">
-                            <label>Description</label>
+                         <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Description</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
                             {{view Ember.TextArea placeholder="description" valueBinding="controller.editDescription"}}
                           </div>
                         </div>
                         <div class="row">
                           <div class="large-12 columns">
-                              <button {{action "save" faculty target="controller" }} class="button radius" >Save</button>
-                              <button {{action "cancel" faculty target="controller" }} class="button radius">Cancel</button>
+                              <button {{action "save" faculty target="controller" }} class="button small radius" >Save</button>
+                              <button {{action "cancel" faculty target="controller" }} class="button small radius">Cancel</button>
                           </div>
                         </div>
                     </form>
                     {{else}}
-                        <h3>{{faculty.title}} </h3>
+                        <h5>{{faculty.title}} </h5>
                         <p>{{faculty.description}} </p>   
-                        <button {{action "edit" faculty target="controller"}} class="button radius">Edit</button> 
-                        <button {{action "remove" faculty target="controller"}} class="button radius">Delete</button>
+                        <button {{action "edit" faculty target="controller"}} class="button small radius">Edit</button> 
+                        <button {{action "remove" faculty target="controller"}} class="button small radius">Delete</button>
                     {{/if}}
+                 </div>
                 </li>
                 {{else}}
-                    <li>
+                    <li class="other">
+                        <div class="messages messages_fullWidth">
                         <p>No Faculty Exits. Create one</p>
+                        </div>
                     </li>
                 {{/each}}
                 </ul>
@@ -474,51 +637,177 @@
         </script>
 
         <script type="text/x-handlebars" id="admin/departments">
+            <h4>Manage Departments</h4>
             {{#if controller.dataLoaded }}
-                <button {{action "create" target="controller"}} class="button radius">Create</button>
-                {{#unless controller.content }}
-                    <div class="panel">
-                        <p>No Department Exits. Create one</p>
-                    </div>
-                {{/unless  }}
+            <button {{action "create" target="controller"}} class="button small radius">Create</button>
+            <ol class="discussion">
                 {{#each department in controller}}
-                <div class="panel">
+
+                <li class="other">
+                    <div class="messages messages_fullWidth">
                     {{#if department.isEditing }}
                     <form>
-                        <div class="row">
-                          <div class="large-12 columns">
-                            <label>Faculty </label>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Faculty</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
                             {{view Ember.Select contentBinding="controller.faculties" optionValuePath="content.id" optionLabelPath="content.title"
                                 valueBinding="controller.editFacultyId"}}
                           </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Title</span>
                         </div>
-                        <div class="row">
-                          <div class="large-12 columns">
-                            <label>Title</label>
+                        <div class="small-9 large-10 columns">
                             {{view Ember.TextField placeholder="title" valueBinding="controller.editTitle"}}
                           </div>
                         </div>
-                        <div class="row">
-                          <div class="large-12 columns">
-                            <label>Description</label>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Description</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
                             {{view Ember.TextArea placeholder="description" valueBinding="controller.editDescription"}}
                           </div>
                         </div>
                         <div class="row">
                           <div class="large-12 columns">
-                              <button {{action "save" department target="controller" class="button radius"}} >Save</button>
-                              <button {{action "cancel" department target="controller" class="button radius"}} >Cancel</button>
+                              <button {{action "save" department target="controller" }} class="button small radius">Save</button>
+                              <button {{action "cancel" department target="controller"}} class="button small radius">Cancel</button>
                           </div>
                         </div>
                     </form>
                     {{else}}
-                        <h3> {{department.title}} ({{department.facultyTitle}})</h3>
+                        <h5> {{department.title}}</h5>
                         <p>{{department.description}} </p>   
-                        <button {{action "edit" department target="controller" class="button radius"}}>Edit</button> 
-                        <button {{action "remove" department target="controller" class="button radius"}}>Delete</button>
+                        <button {{action "edit" department target="controller" }} class="button small radius">Edit</button> 
+                        <button {{action "remove" department target="controller"}} class="button small radius">Delete</button>
                     {{/if}}
                 </div>
+                </li>
+                {{else}}
+                    <li class="other">
+                        <div class="messages messages_fullWidth">
+                            <p>No Department Exits. Create one</p>
+                        </div>
+                    </li>
                 {{/each}}
+                </ol>
+            {{else}}
+                <div id="spinner" class="preloader"></div>
+            {{/if}}
+        </script>
+
+        <script type="text/x-handlebars" id="admin/profiles">
+            <h4>Manage Profiles</h4>
+            {{#if controller.dataLoaded }}
+                <button {{action "create" target="controller"}} class="button small radius">Create</button>
+                <ol class="discussion">
+                {{#each profile in controller}}
+
+                <li class="other">
+                    <div class="messages messages_fullWidth">
+                    {{#if profile.isEditing }}
+                    <form>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Department</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.Select contentBinding="controller.departments" optionValuePath="content.id" optionLabelPath="content.title"
+                                valueBinding="controller.currentEdit.departmentId" prompt="Please select your department"}}
+                            {{#if content.departmentIdError}} <small class="error">Please select a valid department</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Role</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.Select contentBinding="roles" optionValuePath="content.id" optionLabelPath="content.title" 
+                                valueBinding="controller.currentEdit.roleId" prompt="Please select your role"}}
+                            {{#if content.roleIdError}} <small class="error">Invalid Role</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Firstname </span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Firstname" valueBinding="controller.currentEdit.firstName"}}
+                            {{#if content.firstNameError}} <small class="error">Invalid Firstname</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Lastname</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Lastname" valueBinding="controller.currentEdit.lastName"}}
+                            {{#if content.lastNameError}} <small class="error">Invalid Lastname</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Email</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Email" valueBinding="controller.currentEdit.email"}}
+                            {{#if content.lastNameError}} <small class="error">Invalid Email</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Phone</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextField placeholder="Phone" valueBinding="controller.currentEdit.phone"}}
+                            {{#if content.lastNameError}} <small class="error">Invalid Phone Number</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">Sex</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.Select contentBinding="gender" valueBinding="controller.currentEdit.sex" prompt="Please select your sex"}}
+                            {{#if content.sexError}} <small class="error">Invalid Sex</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row collapse">
+                        <div class="small-3 large-2 columns">
+                          <span class="prefix">About</span>
+                        </div>
+                        <div class="small-9 large-10 columns">
+                            {{view Ember.TextArea placeholder="About Me" valueBinding="controller.currentEdit.about"}}
+                            {{#if content.aboutError}} <small class="error">Invalid About details</small> {{/if}}
+                        </div>
+                    </div>
+                    <div class="row">
+                          <div class="large-12 columns">
+                              <button {{action "save" profile target="controller" }} class="button small radius" >Save</button>
+                              <button {{action "cancel" profile target="controller"}} class="button small radius" >Cancel</button>
+                          </div>
+                        </div>
+                    </form>
+                    {{else}}
+                        <h5>{{profile.firstName}} {{profile.lastName}} ({{profile.email}} )</h5>
+                        <p>{{profile.about}} </p>   
+                        <button {{action "edit" profile target="controller"}} class="button small radius">Edit</button> 
+                        <button {{action "remove" profile target="controller"}} class="button small radius">Delete</button>
+                    {{/if}}
+                    </div>
+                </li>
+                {{else}}
+                    <li class="other">
+                        <div class="messages messages_fullWidth">
+                            <p>No profile Exits. Create one</p>
+                        </div>
+                    </li>
+                {{/each}}
+                </ol>
             {{else}}
                 <div id="spinner" class="preloader"></div>
             {{/if}}
@@ -529,7 +818,7 @@
                 {{#if user.isAdministrator }}
                     <li >
                         {{#linkTo 'admin.faculties'}}
-                            <i class="foundicon-folder"></i> Manage Faculties 
+                            <i class="foundicon-folder"></i> Manage Schools 
                         {{/linkTo}}
                     </li>
                     <li > 
