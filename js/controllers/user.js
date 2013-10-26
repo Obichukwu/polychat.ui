@@ -27,7 +27,10 @@
         parentMessage:null,
 
         newMessage: null,
-        dataLoaded: false
+        dataLoaded: false,
+
+        lastUpdateDate: null,
+        updateInterval:null
     });
 
     emberApp.FriendsIndexController = Ember.ArrayController.extend({
@@ -52,9 +55,12 @@
         sortProperties: ['date'],
         sortAscending: false,
         department:null,
+        lastUpdateDate: null,
 
         newMessage: null,
-        dataLoaded: false
+        dataLoaded: false,
+
+        updateInterval:null
     });
 
     emberApp.AboutController = Ember.ObjectController.extend({});

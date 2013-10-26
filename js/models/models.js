@@ -88,6 +88,7 @@
         date: null,
         departmentId:null,
         profileId:null,
+        profilename:null,
 
         isMe: Ember.computed(function() {
             return this.get('profileId') == emberApp.get('auth.profileId');

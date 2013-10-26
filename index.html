@@ -223,7 +223,7 @@
                     </div>
                     <div class="row">
                         <div class="small-12 large-12 text-right columns">
-                            <button {{action "updateInfo"}} class="button radius">Update</button>
+                            <button {{action "updateInfo"}} class="button small radius">Update</button>
                         </div>
                     </div>
                 </form>
@@ -428,7 +428,7 @@
                             {{/if}}
                                 <div class="messages">
                                     <p>{{discuss.note}}</p>
-                                    <time datetime="{{discuss.Date}}">{{moment_date discuss.Date}}</time>
+                                    <time datetime="{{discuss.Date}}"> {{discuss.profilename}} ({{moment_date discuss.Date}} )</time>
                                 </div>
                             </li>
                         {{else}}

@@ -296,15 +296,15 @@
                 this.transitionTo('feeds.feed', post);
             },
             postNew: function () {
-                var post = this.get('controller.newPost');
+                var nupost = this.get('controller.newPost');
 
-                if (Ember.isEmpty(post)) {
+                if (Ember.isEmpty(nupost)) {
                     this.set('controller.newPostError', true);
                     return;
                 }
 
                 var post = emberApp.Post.create();
-                post.set('content', post);
+                post.set('content', nupost);
                 post.set('postDate', new Date());
                 post.set('contentType', 1);
 
@@ -388,7 +388,22 @@
                 });
                 controller.set("content", dataItems);
                 controller.set('dataLoaded', true);
+                controller.set('lastUpdateDate', new Date());
             });
+            var self = this;
+            var intv = setInterval(function () {
+                var msgId = self.get('controller.parentMessage.messageId');
+                var lastUpdate = self.get('controller.lastUpdateDate');
+
+                emberApp.dataStore.update(msgId, lastUpdate).then(function (result) {
+                    var dataItems = self.get('controller.content');
+                    result.forEach(function (item) {
+                        dataItems.pushObject(emberApp.MessageDiscussion.create(item));
+                    });
+                    self.set('controller.lastUpdateDate', new Date());
+                });
+            }, 10000);
+            controller.set('updateInterval', intv);
         },
         actions: {
             sendMessage: function () {
@@ -414,8 +429,13 @@
                 });
 
                 this.set('controller.newMessage', '');
-            }
-            //Todo: Every 1mins update the message list.
+            },
+            willTransition: function (transition) {
+                var dat = this.controller.get('updateInterval');
+                if (!Ember.isEmpty(dat)) {
+                    clearInterval(dat);
+                }
+            } //Todo: Every 1mins update the message list.
         }
     });
 
@@ -497,14 +517,30 @@
             emberApp.dataStore.set('store', 'chat');
             controller.set('department', model);
             var msgId = model.get('departmentId');
+
+            var self = this;
             emberApp.dataStore.read(msgId).then(function (result) {
                 var dataItems = [];
                 result.forEach(function (item) {
                     dataItems.pushObject(emberApp.ChatDiscussion.create(item));
                 });
+                controller.set('lastUpdateDate', new Date());
                 controller.set("content", dataItems);
                 controller.set('dataLoaded', true);
             });
+            var intv = setInterval(function () {
+                var deptId = self.get('controller.department.departmentId');
+                var lastUpdate = self.get('controller.lastUpdateDate');
+
+                emberApp.dataStore.update(deptId, lastUpdate).then(function (result) {
+                    var dataItems = self.get('controller.content');
+                    result.forEach(function (item) {
+                        dataItems.pushObject(emberApp.ChatDiscussion.create(item));
+                    });
+                    self.set('controller.lastUpdateDate', new Date());
+                });
+            }, 10000);
+            controller.set('updateInterval', intv);
         },
         actions: {
             sendMessage: function () {
@@ -531,11 +567,16 @@
                 });
 
                 this.set('controller.newMessage', '');
+            },
+            willTransition: function (transition) {
+                var dat = this.controller.get('updateInterval');
+                if (!Ember.isEmpty(dat)) {
+                    clearInterval(dat);
+                }
             }
             //Todo: Every 1mins update the message list.
         }
     });
-
 
     emberApp.AdminFacultiesRoute = emberApp.AuthRoute.extend({
         setupController: function (controller, model) {
@@ -653,13 +694,13 @@
             save: function (model) {
                 model.set('isEditing', false);
 
-                model.set('facultyId', this.get('editFacultyId'));
-                model.set('title', this.get('editTitle'));
-                model.set('description', this.get('editDescription'));
+                model.set('facultyId', this.get('controller.editFacultyId'));
+                model.set('title', this.get('controller.editTitle'));
+                model.set('description', this.get('controller.editDescription'));
 
-                this.set('editFacultyId', '');
-                this.set('editTitle', '');
-                this.set('editDescription', '');
+                this.set('controller.editFacultyId', '');
+                this.set('controller.editTitle', '');
+                this.set('controller.editDescription', '');
 
                 if (model.get('departmentId') > 0)
                     emberApp.dataStore.update(model.get('departmentId'), model);

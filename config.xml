@@ -5,7 +5,7 @@
         xmlns:gap   = "http://phonegap.com/ns/1.0"
         id          = "designs.nervlite.polychat"
         versionCode = "10"
-        version     = "0.1.6">
+        version     = "0.1.7">
 
     <name>Polychat</name>
 
